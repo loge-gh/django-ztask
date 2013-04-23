@@ -1,3 +1,4 @@
+from base64 import b64encode, b64decode
 from django.core.management.base import BaseCommand
 from django.utils import autoreload
 #
@@ -57,8 +58,8 @@ class Command(BaseCommand):
                     return
                 task = Task.objects.create(
                     function_name=function_name, 
-                    args=pickle.dumps(args), 
-                    kwargs=pickle.dumps(kwargs), 
+                    args=b64encode(pickle.dumps(args, protocol=pickle.HIGHEST_PROTOCOL)),
+                    kwargs=b64encode(pickle.dumps(kwargs, protocol=pickle.HIGHEST_PROTOCOL)),
                     retry_count=settings.ZTASKD_RETRY_COUNT,
                     next_attempt=time.time() + after
                 )
@@ -96,8 +97,8 @@ class Command(BaseCommand):
                 try:
                     task = Task.objects.get(pk=task_id)
                     function_name = task.function_name
-                    args = pickle.loads(str(task.args))
-                    kwargs = pickle.loads(str(task.kwargs))
+                    args = pickle.loads(b64decode(task.args))
+                    kwargs = pickle.loads(b64decode(task.kwargs))
                 except Exception, e:
                     self.logger.info('Count not get task with id %s:\n%s' % (task_id, e))
                     return
