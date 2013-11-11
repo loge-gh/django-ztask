@@ -3,6 +3,8 @@ from django.db.models import *
 import uuid
 import datetime
 
+from django.utils import timezone
+
 class QuerySetManager(Manager):
     def __getattr__(self, attr, *args):
         try:
@@ -29,7 +31,7 @@ class Task(Model):
     
     def save(self, *args, **kwargs):
         if not self.uuid:
-            self.created = datetime.datetime.utcnow()
+            self.created = timezone.now()
             self.uuid = uuid.uuid4()
         super(Task, self).save(*args, **kwargs)
     
